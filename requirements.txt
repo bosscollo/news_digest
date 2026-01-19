@@ -1,0 +1,16 @@
+# Web / parsing
+requests
+beautifulsoup4
+feedparser
+python-dotenv
+
+# AI libraries
+ollama
+openai
+torch
+transformers==4.44.0
+tensorflow==2.14.0
+tf-keras
+
+# Force compatible NumPy
+numpy<2
