@@ -35,4 +35,4 @@ EMAIL = {
 DB_PATH = "state.db"
 
 # Open-source summarization model
-AI_MODEL_NAME = "gemini-1.5-flash"
+AI_MODEL_NAME = "gemini-2.5-flash"
