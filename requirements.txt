@@ -1,6 +1,12 @@
-google-genai
-tenacity
-feedparser
+# Core Logic
 python-dotenv
+tenacity
+
+# AI Providers
+groq
+openai
+google-genai
+
+# RSS & Data
+feedparser
 beautifulsoup4
-requests
