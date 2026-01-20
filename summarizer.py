@@ -7,7 +7,7 @@ from google import genai
 from config import AI_CONFIG
 from logger import log
 
-# Initialize all clients
+# Initialize
 groq_client = Groq(api_key=AI_CONFIG["groq"]["key"])
 openrouter_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=AI_CONFIG["openrouter"]["key"])
 gemini_client = genai.Client(api_key=AI_CONFIG["gemini"]["key"])
@@ -45,16 +45,16 @@ def call_gemini(prompt):
     return resp.text
 
 def summarize_article(text: str) -> str:
-    prompt = f"Summarize this Kenyan news and please cte impoortance to a senior policy analyst: {text}"
+    prompt = f"Summarize this Kenyan news and please cite importance to a senior policy analyst: {text}"
     
-    # --- FAILOVER WATERFALL ---
+    #Fallback mechanism
     # Try Groq
-    ''''try:
+    try:
         return call_groq(prompt)
     except Exception as e:
         log.warning(f"Groq failed, trying OpenRouter... ({e})")
 
-    '''# Try OpenRouter
+    # Try OpenRouter
     try:
         return call_openrouter(prompt)
     except Exception as e:
@@ -87,7 +87,7 @@ def summarize(articles):
         if not added:
             topics["Other Policy Issues"].append(article)
         
-        time.sleep(1) # Gentle pause to avoid rate limits
+        time.sleep(1) # helps in avoiding rate limits
 
     # Build report
     lines = []
