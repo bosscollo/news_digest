@@ -25,10 +25,12 @@ jobs:
 
       - name: Run daily news digest
         env:
+            # Email Secrets
             EMAIL_SMTP: ${{ secrets.EMAIL_SMTP }}
             EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
             EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-            EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
             EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
             EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+            # Gemini Secret
+            GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
