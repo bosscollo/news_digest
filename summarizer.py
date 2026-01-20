@@ -49,12 +49,12 @@ def summarize_article(text: str) -> str:
     
     # --- FAILOVER WATERFALL ---
     # Try Groq
-    try:
+    ''''try:
         return call_groq(prompt)
     except Exception as e:
         log.warning(f"Groq failed, trying OpenRouter... ({e})")
 
-    # Try OpenRouter
+    '''# Try OpenRouter
     try:
         return call_openrouter(prompt)
     except Exception as e:
@@ -65,7 +65,7 @@ def summarize_article(text: str) -> str:
         return call_gemini(prompt)
     except Exception as e:
         log.error(f"All AI providers failed: {e}")
-        return text[:200] + "..." # Last resort: just a snippet
+        return text[:200] + "..." 
 
 def summarize(articles):
     topics = {topic: [] for topic in TOPIC_MAP.values()}
