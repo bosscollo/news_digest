@@ -35,19 +35,16 @@ pip install -r requirements.txt
 
 Create a .env file in the project root:
 
-#### Email settings
+#### Email settings contains:
 
-EMAIL_SMTP=
-EMAIL_PORT=587
-EMAIL_SENDER=
-EMAIL_PASSWORD=
-EMAIL_RECIPIENTS=
+EMAIL_SMTP,
+EMAIL_PORT=587,
+EMAIL_SENDER,
+EMAIL_PASSWORD,
+EMAIL_RECIPIENTS,
+GROQ_API_KEY,
+OPENROUTER_API_KEY and
+GEMINI_API_KEY
 
-#### AI API keys
-
-GROQ_API_KEY=
-OPENROUTER_API_KEY=
-GEMINI_API_KEY=
-
-### Run
+### 4. Run
 python main.py
