@@ -1,58 +1,53 @@
-# News Digest
+News Digest
 
-**News Digest** is an autonomous agent designed to monitor, filter, and summarize the Kenyan policy news. It provides policy analysts and researchers with updates on specific topics like infrastructure, ICT, housing, and energy sectors.
+News Digest is an autonomous agent designed to monitor, filter, and summarize the Kenyan policy news. It provides policy analysts and researchers with updates on specific topics like infrastructure, ICT, housing, and energy sectors.
 
----
+Core Functionality
 
-## Core Functionality
+Automated Monitoring: Scans multiple Kenyan news RSS feeds in real-time.
 
-- **Automated Monitoring**: Scans multiple Kenyan news RSS feeds in real-time.  
-- **Content Filtering**: Uses keyword-based logic to isolate policy-relevant articles from general news.  
-- **Resilient Summarization**: Employs a multi-LLM failover system to ensure consistent uptime. If one service is unavailable, the agent automatically migrates the task to another provider (Groq → OpenRouter → Gemini).  
-- **Intelligence Delivery**: Categorizes summaries by policy domain and dispatches an organized digest via email.  
-- **Data Persistence**: Uses a SQLite database to track processed articles and prevent redundant summaries.  
+Content Filtering: Uses keyword-based logic to isolate policy-relevant articles from general news.
 
----
+Resilient Summarization: Employs a multi-LLM failover system to ensure consistent uptime. If one service is unavailable, the agent automatically migrates the task to another provider (Groq → OpenRouter → Gemini).
 
-## System Workflow
+Intelligence Delivery: Categorizes summaries by policy domain and dispatches an organized digest via email.
 
-```
+Data Persistence: Uses a SQLite database to track processed articles and prevent redundant summaries.
+
+System Workflow
 RSS feeds
   → dedup (SQLite)
   → keyword filter
   → AI relevance confirmation
-  → AI summarization
+  → AI summarization (failover: Groq → OpenRouter → Gemini)
   → topic grouping
   → email delivery
-```
-## Setup
 
-### 1. Clone
-
-```bash
+Setup
+1. Clone
 git clone https://github.com/bosscollo/news_digest.git
 cd news_digest
 
-### 2. Install dependencies
-
+2. Install dependencies
 pip install -r requirements.txt
 
-### 3. Configure environment
+3. Configure environment
 
 Create a .env file in the project root:
 
-##### Email settings
+Email settings
+
 EMAIL_SMTP=
 EMAIL_PORT=587
 EMAIL_SENDER=
 EMAIL_PASSWORD=
 EMAIL_RECIPIENTS=
 
-#### AI API keys
+AI API keys
+
 GROQ_API_KEY=
 OPENROUTER_API_KEY=
 GEMINI_API_KEY=
 
-## Run
-
+Run
 python main.py
