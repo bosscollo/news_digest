@@ -25,11 +25,11 @@ RSS feeds
 
 ## Setup
 ### 1. Clone
-git clone https://github.com/bosscollo/news_digest.git
-cd news_digest
+$git clone https://github.com/bosscollo/news_digest.git
+$cd news_digest
 
 ### 2. Install dependencies
-pip install -r requirements.txt
+$pip install -r requirements.txt
 
 ### 3. Configure environment
 
@@ -47,4 +47,4 @@ OPENROUTER_API_KEY and
 GEMINI_API_KEY
 
 ### 4. Run
-python main.py
+$python main.py
