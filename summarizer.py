@@ -1,17 +1,17 @@
 import re
 import os
 import time
-from tenacity import retry, stop_after_attempt, wait_exponential_jitter, retry_if_exception
+from groq import Groq
+from openai import OpenAI
 from google import genai
-from google.genai import types
-from google.genai.errors import ClientError
-from config import AI_MODEL_NAME
+from config import AI_CONFIG
 from logger import log
 
-# Initialize Gemini Client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# Initialize all clients
+groq_client = Groq(api_key=AI_CONFIG["groq"]["key"])
+openrouter_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=AI_CONFIG["openrouter"]["key"])
+gemini_client = genai.Client(api_key=AI_CONFIG["gemini"]["key"])
 
-# Topic Map (kept from your original code)
 TOPIC_MAP = {
     "energy": "Energy", "transport": "Transport", "ict": "ICT",
     "housing": "Housing", "infrastructure": "Infrastructure",
@@ -21,57 +21,75 @@ TOPIC_MAP = {
     "roads": "Roads", "water": "Water and Sanitation"
 }
 
-def is_rate_limit_error(e):
-    """Check if the error is a 429 Rate Limit."""
-    return isinstance(e, ClientError) and "429" in str(e)
+def call_groq(prompt):
+    resp = groq_client.chat.completions.create(
+        model=AI_CONFIG["groq"]["model"],
+        messages=[{"role": "user", "content": prompt}],
+        timeout=10
+    )
+    return resp.choices[0].message.content
 
-@retry(
-    wait=wait_exponential_jitter(initial=10, max=60), # Wait 10s-60s between retries
-    stop=stop_after_attempt(5),                      # Try 5 times total
-    retry=retry_if_exception(is_rate_limit_error)
-)
-def generate_summary_with_retry(text: str):
-    """Calls Gemini with automatic retry logic."""
-    prompt = f"Summarize this news article in two concise sentences: {text}"
-    response = client.models.generate_content(
-        model=AI_MODEL_NAME,
+def call_openrouter(prompt):
+    resp = openrouter_client.chat.completions.create(
+        model=AI_CONFIG["openrouter"]["model"],
+        messages=[{"role": "user", "content": prompt}],
+        timeout=15
+    )
+    return resp.choices[0].message.content
+
+def call_gemini(prompt):
+    resp = gemini_client.models.generate_content(
+        model=AI_CONFIG["gemini"]["model"], 
         contents=prompt
     )
-    # Forced 2-second pause to respect the 10 RPM limit
-    time.sleep(2) 
-    return response.text
+    return resp.text
 
 def summarize_article(text: str) -> str:
-    if not text:
-        return "No summary available."
+    prompt = f"Summarize this Kenyan news in two concise sentences: {text}"
+    
+    # --- FAILOVER WATERFALL ---
+    # Try Groq
     try:
-        return generate_summary_with_retry(text)
+        return call_groq(prompt)
     except Exception as e:
-        log.error(f"AI failed after retries: {e}")
-        return text[:200] + "..." # Fallback to snippet
+        log.warning(f"Groq failed, trying OpenRouter... ({e})")
+
+    # Try OpenRouter
+    try:
+        return call_openrouter(prompt)
+    except Exception as e:
+        log.warning(f"OpenRouter failed, trying Gemini... ({e})")
+
+    # Try Gemini
+    try:
+        return call_gemini(prompt)
+    except Exception as e:
+        log.error(f"All AI providers failed: {e}")
+        return text[:200] + "..." # Last resort: just a snippet
 
 def summarize(articles):
-    """Processes all articles and groups them by topic."""
     topics = {topic: [] for topic in TOPIC_MAP.values()}
     topics["Other Policy Issues"] = []
 
     for article in articles:
         text = f"{article.get('title', '')} {article.get('summary', '')}".strip()
-        log.info(f"Summarizing: {article.get('title')[:50]}...")
+        log.info(f"Summarizing: {article.get('title')[:40]}...")
         
-        # Get AI summary
         article['summary'] = summarize_article(text)
-
-        # Topic assignment
+        
+        # Categorize
         added = False
         for kw, topic in TOPIC_MAP.items():
             if re.search(rf"\b{kw}\b", text, re.I):
                 topics[topic].append(article)
                 added = True
+                break 
         if not added:
             topics["Other Policy Issues"].append(article)
+        
+        time.sleep(1) # Gentle pause to avoid rate limits
 
-    # Build final text
+    # Build report
     lines = []
     for topic, arts in topics.items():
         if arts:
