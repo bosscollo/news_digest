@@ -25,4 +25,34 @@ RSS feeds
   → topic grouping
   → email delivery
 ```
+## Setup
 
+### 1. Clone
+
+```bash
+git clone https://github.com/bosscollo/news_digest.git
+cd news_digest
+
+### 2. Install dependencies
+
+pip install -r requirements.txt
+
+### 3. Configure environment
+
+Create a .env file in the project root:
+
+##### Email settings
+EMAIL_SMTP=
+EMAIL_PORT=587
+EMAIL_SENDER=
+EMAIL_PASSWORD=
+EMAIL_RECIPIENTS=
+
+#### AI API keys
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+GEMINI_API_KEY=
+
+## Run
+
+python main.py
