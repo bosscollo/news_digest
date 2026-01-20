@@ -45,7 +45,7 @@ def call_gemini(prompt):
     return resp.text
 
 def summarize_article(text: str) -> str:
-    prompt = f"Summarize this Kenyan news in two concise sentences: {text}"
+    prompt = f"Summarize this Kenyan news and please cte impoortance to a senior policy analyst: {text}"
     
     # --- FAILOVER WATERFALL ---
     # Try Groq
