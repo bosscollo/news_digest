@@ -34,5 +34,3 @@ EMAIL = {
 # Database for tracking seen articles
 DB_PATH = "state.db"
 
-# Open-source summarization model
-AI_MODEL_NAME = "facebook/bart-large-cnn"  # You can change to smaller models if needed
