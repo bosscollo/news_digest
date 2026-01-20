@@ -34,5 +34,8 @@ EMAIL = {
 # Database for tracking seen articles
 DB_PATH = "state.db"
 
-# Open-source summarization model
-AI_MODEL_NAME = "gemini-2.5-flash"
+AI_CONFIG = {
+    "groq": {"model": "llama-3.3-70b-versatile", "key": os.getenv("GROQ_API_KEY")},
+    "openrouter": {"model": "meta-llama/llama-3.3-70b-instruct:free", "key": os.getenv("OPENROUTER_API_KEY")},
+    "gemini": {"model": "gemini-2.0-flash", "key": os.getenv("GEMINI_API_KEY")}
+}
