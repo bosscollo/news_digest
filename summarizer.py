@@ -1,6 +1,7 @@
 import re
-from transformers import pipeline
-from config import AI_MODEL_NAME
+import os
+import json
+import google.generativeai as genai
 from logger import log
 
 # Map keywords to policy topics
@@ -17,56 +18,45 @@ TOPIC_MAP = {
     "water": "Water and Sanitation"
 }
 
-# Initialize the Hugging Face summarization pipeline
-log.info(f"Loading AI summarizer model: {AI_MODEL_NAME}")
-try:
-    summarizer = pipeline("summarization", model=AI_MODEL_NAME)
-except Exception as e:
-    log.error(f"Failed to load AI summarizer model: {e}")
-    summarizer = None  # fallback in case model fails to load
+# Initialize Gemini
+# Make sure to add GEMINI_API_KEY to your GitHub Secrets/Environment
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def summarize_article(text: str) -> str:
-    """Summarize a single article using AI, fallback to first 200 chars if AI fails."""
+    """Summarize a single article using Gemini Flash."""
     if not text:
         return "No summary available."
 
-    # Fallback if summarizer failed to initialize
-    if not summarizer:
-        return text[:200] + "..."
-
-    # Approximate token count
-    token_count = len(text.split())
-    max_len = min(120, token_count)
-    min_len = min(20, max_len)
-
-    # Instruction for policy-focused summary
-    prompt = "Summarize this article in 2-3 sentences focusing on policy relevance:\n" + text
+    prompt = f"""
+    You are a Kenyan Policy Analyst. Summarize the following news article in 2-3 sentences.
+    Focus on the implications for national policy, infrastructure, or the economy.
+    
+    ARTICLE TEXT:
+    {text}
+    """
 
     try:
-        result = summarizer(
-            prompt, max_length=max_len, min_length=min_len, do_sample=False, truncation=True
-        )
-        summary = result[0]["summary_text"].strip()
-        # Clean up the prompt instruction if returned in summary
-        summary = summary.replace(
-            "Summarize this article in 2-3 sentences focusing on policy relevance:", ""
-        ).strip()
-        return summary
+        response = model.generate_content(prompt)
+        return response.text.strip()
     except Exception as e:
-        log.error(f"AI summarization failed: {e}")
+        log.error(f"Gemini summarization failed: {e}")
         # fallback: return first 200 characters
         return text[:200] + "..."
 
 def summarize(articles):
     """
     Summarize a list of RSS articles and group by topic.
-    Removes duplicates per topic.
-    Returns a formatted string ready to send via email.
+    Returns a formatted string for the news digest.
     """
     topics = {topic: [] for topic in TOPIC_MAP.values()}
 
+    log.info(f"Processing {len(articles)} articles with Gemini...")
+
     for article in articles:
         text = f"{article.get('title', '')} {article.get('summary', '')}".strip()
+        
+        # Phase 2 Intelligence: AI Summarization
         article['summary'] = summarize_article(text)
 
         # Assign article to topics based on keywords
@@ -80,27 +70,22 @@ def summarize(articles):
         if not added_to_topic:
             topics.setdefault("Other Policy Issues", []).append(article)
 
-    # Remove duplicates per topic (by article link)
-    for topic, arts in topics.items():
-        seen = set()
-        unique_articles = []
-        for art in arts:
-            link = art.get('link')
-            if link not in seen:
-                seen.add(link)
-                unique_articles.append(art)
-        topics[topic] = unique_articles
-
     # Build the final email/report text
-    lines = []
+    lines = ["# 🇰🇪 Kenya Policy News Digest", ""]
+    
     for topic, arts in topics.items():
         if not arts:
-            lines.append(f"**{topic}** - No direct policy news items found.\n")
             continue
 
-        lines.append(f"**{topic}**")
+        lines.append(f"### 📍 {topic}")
+        # Remove duplicates by link
+        seen_links = set()
         for art in arts:
-            lines.append(f"- {art['summary']} [Read more]({art['link']})")
-        lines.append("")  # blank line between topics
+            if art['link'] not in seen_links:
+                lines.append(f"- {art['summary']}")
+                lines.append(f"  [Read Full Article]({art['link']})")
+                lines.append("")
+                seen_links.add(art['link'])
+        lines.append("---")
 
     return "\n".join(lines)
