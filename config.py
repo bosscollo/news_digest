@@ -34,3 +34,5 @@ EMAIL = {
 # Database for tracking seen articles
 DB_PATH = "state.db"
 
+# Open-source summarization model
+AI_MODEL_NAME = "gemini-1.5-flash"
