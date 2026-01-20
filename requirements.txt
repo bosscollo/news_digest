@@ -5,7 +5,13 @@ feedparser
 python-dotenv
 
 # AI libraries
-google-generativeai
+google-genai
+ollama
+openai
+torch
+transformers==4.44.0
+tensorflow==2.14.0
+tf-keras
 
 # Force compatible NumPy
 numpy<2
