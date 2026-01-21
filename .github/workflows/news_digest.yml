@@ -25,14 +25,15 @@ jobs:
 
       - name: Run daily news digest
         env:
-            # Email Secrets
+            # Secrets
             EMAIL_SMTP: ${{ secrets.EMAIL_SMTP }}
             EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
             EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
             EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
             EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
-            # AI SecretS
             GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
             OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
             GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+            SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+            SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python main.py
