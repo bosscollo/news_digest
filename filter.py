@@ -1,30 +1,52 @@
-import sqlite3
+import os
+from supabase import create_client, Client
 import re
-from config import KEYWORDS, DB_PATH
+from config import KEYWORDS
 from logger import log
 
+# Initialize Supabase client
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_KEY")
+
+if not supabase_url or not supabase_key:
+    raise RuntimeError("Supabase credentials missing in environment variables")
+
+supabase: Client = create_client(supabase_url, supabase_key)
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("CREATE TABLE IF NOT EXISTS seen (link TEXT PRIMARY KEY)")
-    conn.close()
+    log.info("Using Supabase for article tracking")
 
 def is_new(article):
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("SELECT 1 FROM seen WHERE link = ?", (article["link"],))
-    exists = cur.fetchone()
-    conn.close()
-    return exists is None
+    """Check if article link already exists in Supabase"""
+    try:
+        response = supabase.table("seen").select("link").eq("link", article["link"]).execute()
+        exists = len(response.data) > 0
+        return not exists
+    except Exception as e:
+        log.error(f"Error checking article in Supabase: {e}")
+        # Fail open 
+        return True
 
 def save_articles(articles):
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    for a in articles:
-        cur.execute("INSERT OR IGNORE INTO seen VALUES (?)", (a["link"],))
-    conn.commit()
-    conn.close()
+    """Save processed articles to Supabase"""
+    try:
+        records = [
+            {
+                "link": a["link"],
+                "title": a.get("title", "")[:500]  # Limit title length
+            }
+            for a in articles
+        ]
+        
+        if records:
+            # Use upsert to handle duplicates gracefully
+            supabase.table("seen").upsert(records, on_conflict="link").execute()
+            log.info(f"Saved {len(records)} articles to Supabase")
+    except Exception as e:
+        log.error(f"Error saving articles to Supabase: {e}")
 
 def filter_topics(articles):
+    """Filter articles by policy-relevant keywords"""
     patterns = [re.compile(rf"\b{k}\b", re.I) for k in KEYWORDS]
     result = []
     for a in articles:
