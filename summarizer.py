@@ -33,6 +33,18 @@ Be objective, technical, and focus on governance and policy relevance.
 
 Article: {text}"""
 
+# AI relevance check prompt
+RELEVANCE_PROMPT = """Is this Kenyan news article truly about policy issues in infrastructure, ICT, housing, energy, water/sanitation, transport, roads, construction, or urban development?
+
+Answer ONLY "YES" or "NO" followed by a brief reason.
+
+Ignore metaphorical uses like "cold water", "building bridges" (politically), "roadmap" (political plan), etc.
+Focus on actual physical infrastructure, utilities, construction projects, technology deployment, housing programs, etc.
+
+Article: {text}
+
+Answer:"""
+
 def call_groq(prompt):
     resp = groq_client.chat.completions.create(
         model=AI_CONFIG["groq"]["model"],
@@ -55,6 +67,30 @@ def call_gemini(prompt):
         contents=prompt
     )
     return resp.text
+
+def check_relevance(text: str) -> bool:
+    """Use AI to verify if article is truly policy-relevant, not just keyword match"""
+    prompt = RELEVANCE_PROMPT.format(text=text)
+    
+    # Try AI providers with fallback
+    try:
+        response = call_groq(prompt).strip().upper()
+        return response.startswith("YES")
+    except Exception as e:
+        log.warning(f"Groq failed for relevance check, trying OpenRouter... ({e})")
+    
+    try:
+        response = call_openrouter(prompt).strip().upper()
+        return response.startswith("YES")
+    except Exception as e:
+        log.warning(f"OpenRouter failed for relevance check, trying Gemini... ({e})")
+    
+    try:
+        response = call_gemini(prompt).strip().upper()
+        return response.startswith("YES")
+    except Exception as e:
+        log.error(f"All AI providers failed for relevance check: {e}")
+        return True  # Fail open - include article if AI check fails
 
 def summarize_article(text: str) -> str:
     prompt = SUMMARY_PROMPT.format(text=text)
@@ -85,8 +121,14 @@ def summarize(articles):
 
     for article in articles:
         text = f"{article.get('title', '')} {article.get('summary', '')}".strip()
-        log.info(f"Summarizing: {article.get('title')[:40]}...")
+        log.info(f"Checking relevance: {article.get('title')[:40]}...")
         
+        # First, check if article is actually policy-relevant using AI
+        if not check_relevance(text):
+            log.info(f"Skipped (not policy-relevant): {article.get('title')[:40]}")
+            continue
+        
+        log.info(f"Summarizing: {article.get('title')[:40]}...")
         article['summary'] = summarize_article(text)
         
         # Categorize
@@ -99,7 +141,7 @@ def summarize(articles):
         if not added:
             topics["Other Policy Issues"].append(article)
         
-        time.sleep(1) # helps in avoiding rate limits
+        time.sleep(1) # helps in avoiding rate limit
 
     # Build report
     lines = ["Kenya Policy News Digest\n"]
