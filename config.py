@@ -33,7 +33,10 @@ EMAIL = {
 }
 
 # Database for tracking seen articles
-DB_PATH = "state.db"
+SUPABASE_CONFIG = {
+    "url": os.getenv("SUPABASE_URL"),
+    "key": os.getenv("SUPABASE_KEY")
+}
 
 AI_CONFIG = {
     "groq": {"model": "llama-3.3-70b-versatile", "key": os.getenv("GROQ_API_KEY")},
