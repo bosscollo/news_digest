@@ -12,7 +12,7 @@ Summarization: Employs a multi-LLM failover system to ensure consistent uptime. 
 
 Intelligence Delivery: Categorizes summaries by policy domain and dispatches an organized digest via email.
 
-Data Persistence: Uses a SQLite database to track processed articles and prevent redundant summaries.
+Data Persistence: Uses a supabase database to track processed articles and prevent redundant summaries.
 
 ### System Workflow
 RSS feeds
