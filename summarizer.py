@@ -21,6 +21,18 @@ TOPIC_MAP = {
     "roads": "Roads", "water": "Water and Sanitation"
 }
 
+SUMMARY_PROMPT = """You are summarizing Kenyan news for senior policy analysts and researchers.
+
+For this article, provide a concise 3-4 sentence analysis that covers:
+- What policy area or sector is affected
+- Key government agencies, ministries, or stakeholders involved
+- Specific implications for policy development, regulation, or public programs
+- Any quantifiable data (budgets, timelines, targets) mentioned
+
+Be objective, technical, and focus on governance and policy relevance.
+
+Article: {text}"""
+
 def call_groq(prompt):
     resp = groq_client.chat.completions.create(
         model=AI_CONFIG["groq"]["model"],
@@ -45,9 +57,9 @@ def call_gemini(prompt):
     return resp.text
 
 def summarize_article(text: str) -> str:
-    prompt = f"Summarize this Kenyan news and please cite importance to a senior policy analyst: {text}"
+    prompt = SUMMARY_PROMPT.format(text=text)
     
-    #Fallback mechanism
+    # Fallback mechanism
     # Try Groq
     try:
         return call_groq(prompt)
@@ -90,11 +102,17 @@ def summarize(articles):
         time.sleep(1) # helps in avoiding rate limits
 
     # Build report
-    lines = []
+    lines = ["Kenya Policy News Digest\n"]
+    lines.append(f"Generated on {time.strftime('%B %d, %Y at %H:%M EAT')}\n")
+    lines.append("=" * 60 + "\n")
+    
     for topic, arts in topics.items():
         if arts:
-            lines.append(f"\n### {topic}")
+            lines.append(f"\n{topic.upper()}")
+            lines.append("-" * len(topic) + "\n")
             for a in arts:
-                lines.append(f"- **{a['title']}**: {a['summary']} [Link]({a['link']})")
+                lines.append(f"{a['title']}")
+                lines.append(f"{a['summary']}")
+                lines.append(f"Read more: {a['link']}\n")
     
     return "\n".join(lines)
