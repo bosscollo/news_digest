@@ -10,3 +10,6 @@ google-genai
 # RSS & Data
 feedparser
 beautifulsoup4
+
+# Database
+supabase
