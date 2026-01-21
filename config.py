@@ -14,6 +14,7 @@ SITES = [
     {"name": "Standard Business", "type": "rss", "url": "https://www.standardmedia.co.ke/rss/business.php"},
     {"name": "Standard Politics", "type": "rss", "url": "https://www.standardmedia.co.ke/rss/politics.php"},
     {"name": "Standard Agriculture", "type": "rss", "url": "https://www.standardmedia.co.ke/rss/agriculture.php"},
+    {"name": "The East African", "type": "rss", "url": "https://www.theeastafrican.co.ke/service/rss/tea/1289142/feed.rss"},
 ]
 
 # Keywords to filter
