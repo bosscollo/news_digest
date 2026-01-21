@@ -1,8 +1,8 @@
-### News Digest
+## News Digest
 
 News Digest is an autonomous agent designed to monitor, filter, and summarize the Kenyan policy news. It provides policy analysts and researchers with updates on specific topics like infrastructure, ICT, housing, and energy sectors.
 
-## Core Functionality
+### Core Functionality
 
 Automated Monitoring: Scans multiple Kenyan news RSS feeds in real-time.
 
@@ -14,16 +14,16 @@ Intelligence Delivery: Categorizes summaries by policy domain and dispatches an 
 
 Data Persistence: Uses a SQLite database to track processed articles and prevent redundant summaries.
 
-## System Workflow
+### System Workflow
 RSS feeds
-  → dedup (SQLite)
+  → dedup (Supabase)
   → keyword filter
   → AI relevance confirmation
   → AI summarization (failover: Groq → OpenRouter → Gemini)
   → topic grouping
   → email delivery
 
-## Setup
+### Setup
 ### 1. Clone
 $git clone https://github.com/bosscollo/news_digest.git
 $cd news_digest
