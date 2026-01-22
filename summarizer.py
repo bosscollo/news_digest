@@ -22,27 +22,25 @@ TOPIC_MAP = {
 }
 
 SUMMARY_PROMPT = """
-You are summarising a PUBLIC POLICY DOCUMENT that MUST relate specifically to KENYA.
+You are producing a KENYAN POLICY NEWS DIGEST for senior policy analysts.
 
-If the document is not explicitly about Kenya (national or county government, Kenyan institutions, or Kenyan policy context), state clearly: "Not a Kenyan policy document."
+The input is a Kenyan news article. Summarise ONLY the policy-relevant information.
 
-For valid Kenyan policy documents, produce a concise, structured summary that enables comparison with similar policies from other repositories.
+In 3–4 concise sentences, clearly cover:
+- The Kenyan policy sector affected
+- The government ministry, agency, or public institution involved
+- The policy action reported (decision, implementation, regulation, funding, or programme change)
+- Implications for policy development, regulation, or public service delivery
+- Any specific figures mentioned (budgets, targets, timelines, locations)
 
-In 4–6 sentences, clearly state:
-- Policy domain / sector in Kenya
-- Type of document (e.g. policy paper, strategy, framework, guideline)
-- Core policy objectives
-- Key policy instruments or interventions proposed
-- Implementation actors (Kenyan ministries, agencies, counties, or institutions)
-- Any measurable targets, timelines, or financial commitments in Kenya
+Use objective, technical language.
+Exclude opinions, political rhetoric, and background narrative.
+Write so the summary can be easily compared with other Kenyan policy news items.
 
-Use neutral, technical policy language.
-Do NOT include opinions, recommendations, or narrative style.
-Ensure the summary can be directly compared with summaries from other policy repositories.
-
-Document text:
+Article text:
 {text}
 """
+
 
 
 # AI relevance check prompt
