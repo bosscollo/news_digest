@@ -22,24 +22,32 @@ TOPIC_MAP = {
 }
 
 SUMMARY_PROMPT = """
-You are producing a KENYAN POLICY NEWS DIGEST for senior policy analysts.
+You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
 
-The input is a Kenyan news article. Summarise ONLY the policy-relevant information.
+The input is a CURRENT Kenyan news article on a specific policy issue.
+Your task is to analyse the news and situate it within Kenya’s policy framework.
 
-In 3–4 concise sentences, clearly cover:
-- The Kenyan policy sector affected
-- The government ministry, agency, or public institution involved
-- The policy action reported (decision, implementation, regulation, funding, or programme change)
-- Implications for policy development, regulation, or public service delivery
-- Any specific figures mentioned (budgets, targets, timelines, locations)
+Produce a concise, structured insight (5–7 sentences) that:
+- Identifies the policy issue and sector in Kenya
+- Summarises the key policy-relevant development reported in the news
+- Links the news to relevant Kenyan policy frameworks, plans, or strategies
+  (e.g. national development plans, county development plans, Vision 2030,
+  or policies commonly housed in the KIPPRA Policy Repository)
+- Explains how the current news fits within ongoing or previously stated
+  policy objectives or implementation plans
+- Notes any implications for policy implementation, service delivery,
+  infrastructure development, or economic outcomes
+- Includes any specific figures mentioned (budgets, targets, timelines, locations)
 
-Use objective, technical language.
-Exclude opinions, political rhetoric, and background narrative.
-Write so the summary can be easily compared with other Kenyan policy news items.
+Use neutral, technical policy language.
+Exclude political rhetoric, opinion, and non-policy background.
+Write in a way that allows comparison with past and future policy news items
+on the same issue.
 
 Article text:
 {text}
 """
+
 
 
 
