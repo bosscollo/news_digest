@@ -21,17 +21,29 @@ TOPIC_MAP = {
     "roads": "Roads", "water": "Water and Sanitation"
 }
 
-SUMMARY_PROMPT = """You are summarizing Kenyan news for senior policy analysts and researchers.
+SUMMARY_PROMPT = """
+You are summarising a PUBLIC POLICY DOCUMENT that MUST relate specifically to KENYA.
 
-For this article, provide a concise 3-4 sentence analysis that covers:
-- What policy area or sector is affected
-- Key government agencies, ministries, or stakeholders involved
-- Specific implications for policy development, regulation, or public programs
-- Any quantifiable data (budgets, timelines, targets) mentioned
+If the document is not explicitly about Kenya (national or county government, Kenyan institutions, or Kenyan policy context), state clearly: "Not a Kenyan policy document."
 
-Be objective, technical, and focus on governance and policy relevance.
+For valid Kenyan policy documents, produce a concise, structured summary that enables comparison with similar policies from other repositories.
 
-Article: {text}"""
+In 4–6 sentences, clearly state:
+- Policy domain / sector in Kenya
+- Type of document (e.g. policy paper, strategy, framework, guideline)
+- Core policy objectives
+- Key policy instruments or interventions proposed
+- Implementation actors (Kenyan ministries, agencies, counties, or institutions)
+- Any measurable targets, timelines, or financial commitments in Kenya
+
+Use neutral, technical policy language.
+Do NOT include opinions, recommendations, or narrative style.
+Ensure the summary can be directly compared with summaries from other policy repositories.
+
+Document text:
+{text}
+"""
+
 
 # AI relevance check prompt
 RELEVANCE_PROMPT = """Is this Kenyan news article truly about policy issues in infrastructure, ICT, housing, energy, water/sanitation, transport, roads, construction, or urban development?
