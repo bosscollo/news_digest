@@ -22,38 +22,33 @@ TOPIC_MAP = {
 }
 
 SUMMARY_PROMPT = """
-You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
+Extract a FACTUAL POLICY NEWS BRIEF from the article below.
 
-The input is a CURRENT Kenyan news article.
-Your task is to analyse the news and situate it within Kenya’s policy framework.
+Write in BULLET POINTS only.
+Do NOT write paragraphs.
+Do NOT introduce or conclude.
+Do NOT analyse or interpret.
+Do NOT mention policy frameworks unless explicitly named.
 
-Produce a concise, structured insight (5–7 sentences) that:
-- Identifies the policy issue and sector in Kenya
-- Summarises the key policy-relevant development reported in the news
-- Links the news to relevant Kenyan policy frameworks, plans, or strategies
-  (e.g. national development plans, county development plans, Vision 2030,
-  or policies commonly housed in the KIPPRA Policy Repository)
-- Explains how the current news fits within ongoing or previously stated
-  policy objectives or implementation plans
-- Notes any implications for policy implementation, service delivery,
-  infrastructure development, or economic outcomes
-- Includes any specific figures mentioned (budgets, targets, timelines, locations)
+Each bullet must contain ONE concrete fact.
 
-Do NOT:
-- Announce your role or refer to yourself
-- Use generic filler such as “this aligns with government objectives”
-- Introduce political commentary or opinion
-- Force references to Vision 2030 or plans unless they are clearly relevant
+Focus on:
+- What happened
+- Who is responsible or involved
+- Quantities, budgets, targets, or figures
+- Locations (national or county)
+- Timelines or implementation status
+- Institutions or agencies mentioned
 
-Use neutral, technical policy language.
-Exclude political rhetoric, opinion, and non-policy background.
-Write in a way that allows comparison with past and future policy news items
-on the same issue.
+Rules:
+- Neutral government reporting tone
+- Exact figures as stated
+- No assumptions or generalisations
+- Omit anything not clearly stated in the article
 
 Article text:
 {text}
 """
-
 
 RELEVANCE_PROMPT = """
 Determine whether this article should be INCLUDED in a
@@ -187,17 +182,21 @@ def summarize(articles):
         time.sleep(1) # helps in avoiding rate limit
 
     # Build report
-    lines = ["Kenya Policy News Digest\n"]
-    lines.append(f"Generated on {time.strftime('%B %d, %Y at %H:%M EAT')}\n")
-    lines.append("=" * 60 + "\n")
-    
+    lines = []
+    lines.append("Kenya Policy News Digest\n")
+    lines.append(f"Date: {time.strftime('%d %B %Y')}\n")
+    lines.append("=" * 60)
+
     for topic, arts in topics.items():
-        if arts:
-            lines.append(f"\n{topic.upper()}")
-            lines.append("-" * len(topic) + "\n")
-            for a in arts:
-                lines.append(f"{a['title']}")
-                lines.append(f"{a['summary']}")
-                lines.append(f"Read more: {a['link']}\n")
-    
+        if not arts:
+            continue
+
+        lines.append(f"\n{topic.upper()}")
+        lines.append("-" * len(topic))
+
+        for a in arts:
+            lines.append(f"\n{a.get('title','')}")
+            lines.append(a.get("policy_brief", ""))
+            lines.append(a.get("link", ""))
+
     return "\n".join(lines)
