@@ -21,34 +21,24 @@ TOPIC_MAP = {
     "roads": "Roads", "water": "Water and Sanitation"
 }
 
-SUMMARY_PROMPT = """
-Extract a FACTUAL POLICY NEWS BRIEF from the article below.
-
-Write in BULLET POINTS only.
-Do NOT write paragraphs.
-Do NOT introduce or conclude.
-Do NOT analyse or interpret.
-Do NOT mention policy frameworks unless explicitly named.
-
-Each bullet must contain ONE concrete fact.
-
-Focus on:
-- What happened
-- Who is responsible or involved
-- Quantities, budgets, targets, or figures
-- Locations (national or county)
-- Timelines or implementation status
-- Institutions or agencies mentioned
-
-Rules:
-- Neutral government reporting tone
-- Exact figures as stated
-- No assumptions or generalisations
-- Omit anything not clearly stated in the article
-
-Article text:
-{text}
-"""
+SUMMARY_PROMPT = """ You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
+The input is a CURRENT Kenyan news article. Your task is to analyse the news and situate it within Kenya’s policy framework.
+Produce a concise, structured insight (5–7 sentences) that: 
+- Identifies the policy issue and sector in Kenya 
+- Summarises the key policy-relevant development reported in the news 
+- Links the news to relevant Kenyan policy frameworks, plans, or strategies 
+(e.g. national development plans, county development plans, Vision 2030, or policies commonly housed in the KIPPRA Policy Repository) 
+- Explains how the current news fits within ongoing or previously stated policy objectives or implementation plans 
+- Notes any implications for policy implementation, service delivery, infrastructure development, or economic outcomes 
+- Includes any specific figures mentioned (budgets, targets, timelines, locations) 
+Do NOT: 
+- Announce your role or refer to yourself 
+- Use generic filler such as “this aligns with government objectives” 
+- Introduce political commentary or opinion 
+- Force references to Vision 2030 or plans unless they are clearly relevant Use neutral, technical policy language. 
+Exclude political rhetoric, opinion, and non-policy background. 
+Write in a way that allows comparison with past and future policy news items on the same issue. 
+Article text: {text} """
 
 RELEVANCE_PROMPT = """
 Determine whether this article should be INCLUDED in a
