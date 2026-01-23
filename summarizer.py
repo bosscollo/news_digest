@@ -21,57 +21,47 @@ TOPIC_MAP = {
     "roads": "Roads", "water": "Water and Sanitation"
 }
 
-SUMMARY_PROMPT = """ You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
-The input is a CURRENT Kenyan news article. Your task is to analyse the news and situate it within Kenya’s policy framework.
-Produce a concise, structured insight (5–7 sentences) that: 
-- Identifies the policy issue and sector in Kenya 
-- Summarises the key policy-relevant development reported in the news 
-- Links the news to relevant Kenyan policy frameworks, plans, or strategies 
-(e.g. national development plans, county development plans, Vision 2030, or policies commonly housed in the KIPPRA Policy Repository) 
-- Explains how the current news fits within ongoing or previously stated policy objectives or implementation plans 
-- Notes any implications for policy implementation, service delivery, infrastructure development, or economic outcomes 
-- Includes any specific figures mentioned (budgets, targets, timelines, locations) 
-Do NOT: 
-- Announce your role or refer to yourself 
-- Use generic filler such as “this aligns with government objectives” 
-- Introduce political commentary or opinion 
-- Force references to Vision 2030 or plans unless they are clearly relevant Use neutral, technical policy language. 
-Exclude political rhetoric, opinion, and non-policy background. 
-Write in a way that allows comparison with past and future policy news items on the same issue. 
-Article text: {text} """
+SUMMARY_PROMPT = """
+You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
 
-RELEVANCE_PROMPT = """
-Determine whether this article should be INCLUDED in a
-KENYA-ONLY infrastructure and public policy news digest.
+The input is a CURRENT Kenyan news article on a specific policy issue.
+Your task is to analyse the news and situate it within Kenya’s policy framework.
 
-Answer "YES" ONLY if ALL of the following are true:
-1. The article is primarily about KENYA (national or county level)
-2. The main subject is a REAL policy, project, regulation, funding decision,
-   or implementation activity related to:
-   infrastructure, ICT, housing, energy, water/sanitation,
-   transport, roads, construction, or urban development
-3. The policy or project applies specifically to Kenya
-   (not regional, EAC-wide, or Africa-wide)
+Produce a concise, structured insight (5–7 sentences) that:
+- Identifies the policy issue and sector in Kenya
+- Summarises the key policy-relevant development reported in the news
+- Links the news to relevant Kenyan policy frameworks, plans, or strategies
+  (e.g. national development plans, county development plans, Vision 2030,
+  or policies commonly housed in the KIPPRA Policy Repository)
+- Explains how the current news fits within ongoing or previously stated
+  policy objectives or implementation plans
+- Notes any implications for policy implementation, service delivery,
+  infrastructure development, or economic outcomes
+- Includes any specific figures mentioned (budgets, targets, timelines, locations)
 
-Answer "NO" if:
-- The article is regional or international
-- Kenya is mentioned only in passing or for comparison
-- The topic is political rhetoric, opinion, or metaphorical
-- The subject is not physical infrastructure or service delivery
+Use neutral, technical policy language.
+Exclude political rhetoric, opinion, and non-policy background.
+Write in a way that allows comparison with past and future policy news items
+on the same issue.
 
-Ignore metaphorical uses such as "roadmap", "building bridges",
-or "cold water" in a non-literal sense.
-
-Respond ONLY with:
-YES – <brief reason>
-or
-NO – <brief reason>
-
-Article:
+Article text:
 {text}
-
-Answer:
 """
+
+
+
+
+# AI relevance check prompt
+RELEVANCE_PROMPT = """Is this Kenyan news article truly about policy issues in infrastructure, ICT, housing, energy, water/sanitation, transport, roads, construction, or urban development?
+
+Answer ONLY "YES" or "NO" followed by a brief reason.
+
+Ignore metaphorical uses like "cold water", "building bridges" (politically), "roadmap" (political plan), etc.
+Focus on actual physical infrastructure, utilities, construction projects, technology deployment, housing programs, etc.
+
+Article: {text}
+
+Answer:"""
 
 def call_groq(prompt):
     resp = groq_client.chat.completions.create(
@@ -172,21 +162,17 @@ def summarize(articles):
         time.sleep(1) # helps in avoiding rate limit
 
     # Build report
-    lines = []
-    lines.append("Kenya Policy News Digest\n")
-    lines.append(f"Date: {time.strftime('%d %B %Y')}\n")
-    lines.append("=" * 60)
-
+    lines = ["Kenya Policy News Digest\n"]
+    lines.append(f"Generated on {time.strftime('%B %d, %Y at %H:%M EAT')}\n")
+    lines.append("=" * 60 + "\n")
+    
     for topic, arts in topics.items():
-        if not arts:
-            continue
-
-        lines.append(f"\n{topic.upper()}")
-        lines.append("-" * len(topic))
-
-        for a in arts:
-            lines.append(f"\n{a.get('title','')}")
-            lines.append(a.get("policy_brief", ""))
-            lines.append(a.get("link", ""))
-
+        if arts:
+            lines.append(f"\n{topic.upper()}")
+            lines.append("-" * len(topic) + "\n")
+            for a in arts:
+                lines.append(f"{a['title']}")
+                lines.append(f"{a['summary']}")
+                lines.append(f"Read more: {a['link']}\n")
+    
     return "\n".join(lines)
