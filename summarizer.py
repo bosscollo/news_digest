@@ -28,7 +28,6 @@ The input is a CURRENT Kenyan news article on a specific policy issue.
 Your task is to analyse the news and situate it within Kenya’s policy framework.
 
 Produce a concise, structured insight (5–7 sentences) that:
-- Identifies the policy issue and sector in Kenya
 - Summarises the key policy-relevant development reported in the news
 - Links the news to relevant Kenyan policy frameworks, plans, or strategies
   (e.g. national development plans, county development plans, Vision 2030,
