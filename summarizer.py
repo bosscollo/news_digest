@@ -22,42 +22,31 @@ TOPIC_MAP = {
 }
 
 SUMMARY_PROMPT = """
-You are an AI Policy Analyst producing a KENYAN POLICY NEWS DIGEST.
+You are an AI Policy Analyst producing a Kenyan policy news digest.
 
-The input is a CURRENT Kenyan news article on a specific policy issue.
-Your task is to analyse the news and situate it within Kenya’s policy framework.
+The input is a current Kenyan news article on a specific policy, law, or government initiative.
 
-Produce a concise, structured insight (5–7 sentences) that:
-- Summarises the key policy-relevant development reported in the news
-- Links the news to relevant Kenyan policy frameworks, plans, or strategies
-  (e.g. national development plans, county development plans, Vision 2030,
-  or policies commonly housed in the KIPPRA Policy Repository)
-- Explains how the current news fits within ongoing or previously stated
-  policy objectives or implementation plans
-- Notes any implications for policy implementation, service delivery,
-  infrastructure development, or economic outcomes
-- Includes any specific figures mentioned (budgets, targets, timelines, locations)
+Your task is to produce a concise, natural, structured insight (4–6 sentences) that:
+- Summarises the key development reported in the news.
+- Links the news to relevant Kenyan policy frameworks, plans, or strategies if applicable 
+  (e.g., Vision 2030, sector strategies, county development plans, or policies in the KIPPRA Policy Repository). 
+  Only mention them if there is a direct connection.
+- Highlights any figures, budgets, targets, timelines, or locations mentioned.
+- Explains implications for implementation, service delivery, infrastructure, or economic outcomes.
 
-Write a natural, flowing analysis of this news article (4-6 sentences). Your analysis should:
+Write naturally, like a human analyst briefing a colleague:
+- Start with the concrete development or announcement.
+- Explain why it matters for Kenya’s development goals or sector objectives.
+- Include numbers, timelines, or locations where relevant.
+- Note any implications for services, infrastructure, or the economy.
 
-- Open with what's actually happening - the concrete development or announcement
-- Explain why it matters for Kenya's development goals (reference Vision 2030, sector strategies, or county plans where relevant)
-- Note any specific numbers, timelines, or locations mentioned
-- Point out implications for implementation, service delivery, or economic impact
-- Write like a human analyst would brief a colleague - clear and direct, not formulaic
-
-Avoid phrases like "The policy issue at hand is..." or "This development aligns with...". Just tell the story naturally while connecting it to Kenya's policy landscape.
-
-Use neutral, technical policy language.
-Exclude political rhetoric, opinion, and non-policy background.
-Write in a way that allows comparison with past and future policy news items
-on the same issue.
+Avoid phrases like “The policy issue at hand is…” or “This development aligns with…”. 
+Do not include political commentary or background unrelated to policy. 
+Focus on clear, technical, neutral language suitable for comparing past and future policy developments.
 
 Article text:
 {text}
 """
-
-
 
 
 # AI relevance check prompt
