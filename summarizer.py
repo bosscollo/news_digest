@@ -55,19 +55,38 @@ Article text:
 """
 
 
+RELEVANCE_PROMPT = """
+Determine whether this article should be INCLUDED in a
+KENYA-ONLY infrastructure and public policy news digest.
 
+Answer "YES" ONLY if ALL of the following are true:
+1. The article is primarily about KENYA (national or county level)
+2. The main subject is a REAL policy, project, regulation, funding decision,
+   or implementation activity related to:
+   infrastructure, ICT, housing, energy, water/sanitation,
+   transport, roads, construction, or urban development
+3. The policy or project applies specifically to Kenya
+   (not regional, EAC-wide, or Africa-wide)
 
-# AI relevance check prompt
-RELEVANCE_PROMPT = """Is this Kenyan news article truly about policy issues in infrastructure, ICT, housing, energy, water/sanitation, transport, roads, construction, or urban development?
+Answer "NO" if:
+- The article is regional or international
+- Kenya is mentioned only in passing or for comparison
+- The topic is political rhetoric, opinion, or metaphorical
+- The subject is not physical infrastructure or service delivery
 
-Answer ONLY "YES" or "NO" followed by a brief reason.
+Ignore metaphorical uses such as "roadmap", "building bridges",
+or "cold water" in a non-literal sense.
 
-Ignore metaphorical uses like "cold water", "building bridges" (politically), "roadmap" (political plan), etc.
-Focus on actual physical infrastructure, utilities, construction projects, technology deployment, housing programs, etc.
+Respond ONLY with:
+YES – <brief reason>
+or
+NO – <brief reason>
 
-Article: {text}
+Article:
+{text}
 
-Answer:"""
+Answer:
+"""
 
 def call_groq(prompt):
     resp = groq_client.chat.completions.create(
