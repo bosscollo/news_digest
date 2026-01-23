@@ -38,6 +38,16 @@ Produce a concise, structured insight (5–7 sentences) that:
   infrastructure development, or economic outcomes
 - Includes any specific figures mentioned (budgets, targets, timelines, locations)
 
+Write a natural, flowing analysis of this news article (4-6 sentences). Your analysis should:
+
+- Open with what's actually happening - the concrete development or announcement
+- Explain why it matters for Kenya's development goals (reference Vision 2030, sector strategies, or county plans where relevant)
+- Note any specific numbers, timelines, or locations mentioned
+- Point out implications for implementation, service delivery, or economic impact
+- Write like a human analyst would brief a colleague - clear and direct, not formulaic
+
+Avoid phrases like "The policy issue at hand is..." or "This development aligns with...". Just tell the story naturally while connecting it to Kenya's policy landscape.
+
 Use neutral, technical policy language.
 Exclude political rhetoric, opinion, and non-policy background.
 Write in a way that allows comparison with past and future policy news items
