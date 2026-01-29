@@ -1,17 +1,14 @@
 import re
 import time
 import hashlib
-from typing import List, Dict
-
 from groq import Groq
 from openai import OpenAI
 from google import genai
-
 from config import AI_CONFIG
 from logger import log
 
 
-# CLIENT INITIALISATION
+# INITIALISE 
 groq_client = Groq(api_key=AI_CONFIG["groq"]["key"])
 openrouter_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -23,43 +20,30 @@ gemini_client = genai.Client(api_key=AI_CONFIG["gemini"]["key"])
 # TOPIC
 TOPIC_MAP = {
     "energy": "Energy",
-    "electricity": "Energy",
     "transport": "Transport",
-    "road": "Roads",
-    "roads": "Roads",
-    "rail": "Transport",
     "ict": "ICT",
-    "digital": "ICT",
     "housing": "Housing",
-    "water": "Water and Sanitation",
-    "sanitation": "Water and Sanitation",
-    "sewer": "Water and Sanitation",
-    "construction": "Urban Planning and Development",
-    "building": "Urban Planning and Development",
-    "urban": "Urban Planning and Development",
     "infrastructure": "Infrastructure",
+    "building": "Urban Planning and Development",
+    "construction": "Urban Planning and Development",
+    "urban development": "Urban Planning and Development",
+    "roads": "Roads",
+    "water": "Water and Sanitation",
 }
 
 
 # PROMPTS
 
-RELEVANCE_PROMPT = """
-Is this article genuinely about KENYAN public policy related to physical infrastructure, utilities,
-transport, ICT, housing, urban development, construction, energy, or water and sanitation?
+RELEVANCE_PROMPT = """Is this Kenyan news article genuinely about public policy
+related to physical infrastructure, utilities, ICT, housing, energy, transport,
+roads, construction, water, or urban development?
 
 Exclude articles that:
-- Are primarily political commentary or institutional disputes
-- Focus on another country unless Kenya is directly involved
-- Use infrastructure terms metaphorically (e.g. roadmap, bridge-building)
-- Discuss private business with no policy or regulatory dimension
-Completely exclude stories that primarily concern another country unless Kenya is directly involved
-through funding, implementation, regulation, or cross-border infrastructure.
+- Primarily concern another country unless Kenya is directly involved
+- Are political commentary with no policy implementation dimension
+- Use infrastructure terms metaphorically
 
-
-Answer ONLY:
-YES – <brief reason>
-or
-NO – <brief reason>
+Answer ONLY "YES" or "NO" followed by a brief reason.
 
 Article:
 {text}
@@ -69,29 +53,26 @@ Answer:
 
 
 SUMMARY_PROMPT = """
-You are a Kenyan policy analyst preparing a professional policy news digest.
+You are an AI policy analyst producing a Kenyan policy news digest.
 
-The input is a current Kenyan news article describing a policy action, programme,
-regulatory change, financing decision, or government-linked infrastructure initiative.
+Summarise the concrete policy action, programme, regulation, or government-linked
+infrastructure initiative reported in the article.
 
-Write a concise, natural insight of 4–6 sentences that:
+Write 4–6 sentences that:
+- Start with the specific development or decision.
+- Explain why it matters for implementation, services, infrastructure, or the economy.
+- Include figures, timelines, locations, or targets ONLY if explicitly stated.
 
-- Starts with the concrete policy action or development reported.
-- Explains why it matters for implementation, service delivery, infrastructure, or the economy.
-- Mentions figures, budgets, locations, timelines, or targets ONLY if explicitly stated.
-- Uses neutral, technical language suitable for tracking policy progress over time.
-
-Policy framework references:
-- Mention a framework ONLY if it is clearly and directly relevant.
-- Use the MOST SPECIFIC applicable reference, in this order:
+Policy references:
+- Mention a framework ONLY if directly relevant.
+- Prefer specificity in this order:
   1. Acts, regulations, amendments, or sector policies
-  2. Implementing programmes, funds, or strategies
-  3. KIPPRA policy papers or repository documents
-  4. Continental or regional frameworks (e.g. AU Agenda 2063, EAC)
+  2. Implementing programmes or funds
+  3. KIPPRA policy papers
+  4. AU Agenda 2063 or regional frameworks
   5. Vision 2030 ONLY if no more specific framework applies
 
 Do NOT mention Vision 2030 by default.
-Do NOT name multiple frameworks unless each has distinct relevance.
 Avoid generic policy name-dropping.
 
 Article text:
@@ -99,138 +80,141 @@ Article text:
 """
 
 
-# AI CALL HELPERS
+# AI Call
 
-def call_groq(prompt: str) -> str:
+def call_groq(prompt):
     resp = groq_client.chat.completions.create(
         model=AI_CONFIG["groq"]["model"],
         messages=[{"role": "user", "content": prompt}],
-        timeout=12
+        timeout=10
     )
-    return resp.choices[0].message.content.strip()
+    return resp.choices[0].message.content
 
 
-def call_openrouter(prompt: str) -> str:
+def call_openrouter(prompt):
     resp = openrouter_client.chat.completions.create(
         model=AI_CONFIG["openrouter"]["model"],
         messages=[{"role": "user", "content": prompt}],
-        timeout=18
+        timeout=15
     )
-    return resp.choices[0].message.content.strip()
+    return resp.choices[0].message.content
 
 
-def call_gemini(prompt: str) -> str:
+def call_gemini(prompt):
     resp = gemini_client.models.generate_content(
         model=AI_CONFIG["gemini"]["model"],
         contents=prompt
     )
-    return resp.text.strip()
+    return resp.text
 
 
-def ai_fallback(prompt: str) -> str:
-    """Try providers in order with graceful fallback"""
+#Aid
+
+def normalize(text):
+    return re.sub(r"\W+", " ", text.lower()).strip()
+
+
+def story_fingerprint(text):
+    base = " ".join(normalize(text).split()[:10])
+    return hashlib.md5(base.encode()).hexdigest()
+
+
+def check_relevance(text):
+    prompt = RELEVANCE_PROMPT.format(text=text)
+
+    try:
+        return call_groq(prompt).strip().upper().startswith("YES")
+    except Exception as e:
+        log.warning(f"Groq failed relevance check ({e})")
+
+    try:
+        return call_openrouter(prompt).strip().upper().startswith("YES")
+    except Exception as e:
+        log.warning(f"OpenRouter failed relevance check ({e})")
+
+    try:
+        return call_gemini(prompt).strip().upper().startswith("YES")
+    except Exception as e:
+        log.error(f"All relevance checks failed ({e})")
+        return True  # fail open
+
+
+def summarize_article(text):
+    prompt = SUMMARY_PROMPT.format(text=text)
+
     try:
         return call_groq(prompt)
     except Exception as e:
-        log.warning(f"Groq failed → OpenRouter ({e})")
+        log.warning(f"Groq failed summary ({e})")
 
     try:
         return call_openrouter(prompt)
     except Exception as e:
-        log.warning(f"OpenRouter failed → Gemini ({e})")
+        log.warning(f"OpenRouter failed summary ({e})")
 
     try:
         return call_gemini(prompt)
     except Exception as e:
-        log.error(f"All AI providers failed ({e})")
-        return ""
+        log.error(f"All summarisation failed ({e})")
+        return text[:200] + "..."
 
 
-# UTILS
+#main
 
-def normalize(text: str) -> str:
-    text = text.lower()
-    text = re.sub(r"\W+", " ", text)
-    return text.strip()
-
-
-def story_fingerprint(text: str) -> str:
-    """
-    Create a stable fingerprint to group articles
-    describing the same underlying policy event.
-    """
-    key = " ".join(normalize(text).split()[:10])
-    return hashlib.md5(key.encode()).hexdigest()
-
-
-def detect_topic(text: str) -> str:
-    for kw, topic in TOPIC_MAP.items():
-        if re.search(rf"\b{kw}\b", text, re.I):
-            return topic
-    return "Other Policy Issues"
-
-
-# CORE LOGIC
-
-def is_policy_relevant(text: str) -> bool:
-    prompt = RELEVANCE_PROMPT.format(text=text)
-    response = ai_fallback(prompt).upper()
-    return response.startswith("YES")
-
-
-def summarise_event(text: str) -> str:
-    prompt = SUMMARY_PROMPT.format(text=text)
-    summary = ai_fallback(prompt)
-    return summary if summary else text[:250] + "..."
-
-
-def summarise(articles: List[Dict]) -> str:
+def summarize(articles):
     events = {}
-    
+
     for article in articles:
-        raw_text = f"{article.get('title', '')} {article.get('summary', '')}".strip()
+        text = f"{article.get('title', '')} {article.get('summary', '')}".strip()
         title = article.get("title", "Untitled")
 
-        log.info(f"Relevance check → {title[:50]}")
+        log.info(f"Checking relevance: {title[:40]}")
 
-        if not is_policy_relevant(raw_text):
-            log.info("Skipped (not policy-relevant)")
+        if not check_relevance(text):
             continue
 
-        fp = story_fingerprint(raw_text)
+        fp = story_fingerprint(text)
 
         if fp not in events:
             events[fp] = {
                 "title": title,
-                "text": raw_text,
+                "text": text,
                 "links": [article.get("link")],
-                "topic": detect_topic(raw_text),
+                "topic": None,
                 "summary": None
             }
         else:
             events[fp]["links"].append(article.get("link"))
 
-        time.sleep(0.8)
+        # topic detection (original logic)
+        for kw, topic in TOPIC_MAP.items():
+            if re.search(rf"\b{kw}\b", text, re.I):
+                events[fp]["topic"] = topic
+                break
+
+        time.sleep(1)
 
     # Generate summaries
     for event in events.values():
-        log.info(f"Summarising → {event['title'][:50]}")
-        event["summary"] = summarise_event(event["text"])
-        time.sleep(1)
+        event["summary"] = summarize_article(event["text"])
 
     # Organise by topic
-    topics = {}
-    for event in events.values():
-        topics.setdefault(event["topic"], []).append(event)
+    topics = {t: [] for t in TOPIC_MAP.values()}
+    topics["Other Policy Issues"] = []
 
-    # BUILD REPORT
-    lines = [
-        "Kenya Policy News Digest\n",
-        f"Generated on {time.strftime('%B %d, %Y at %H:%M EAT')}\n",
-        "=" * 60 + "\n"
-    ]
+    for event in events.values():
+        topic = event["topic"] or "Other Policy Issues"
+        topics.setdefault(topic, []).append(event)
+
+    # Build report
+    lines = ["Kenya Policy News Digest\n"]
+    lines.append(f"Generated on {time.strftime('%B %d, %Y at %H:%M EAT')}\n")
+    lines.append("=" * 60 + "\n")
 
     for topic, items in topics.items():
+        if not items:
+            continue
+
         lines.append(f"\n{topic.upper()}")
         lines.append("-" * len(topic) + "\n")
 
